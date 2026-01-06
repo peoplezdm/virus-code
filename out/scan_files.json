@@ -1,0 +1,256 @@
+{
+  "engine": "yara",
+  "engine_path": "E:\\大三上\\恶意代码分析与防治\\大作业\\backend\\yara64.exe",
+  "target": "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs",
+  "rules_dir": "E:\\大三上\\恶意代码分析与防治\\大作业\\rules\\yara",
+  "rules_count": 30,
+  "threads": 4,
+  "hits_files": 60,
+  "hits_total": 124,
+  "detections": {
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_10L\\Lab10-01.exe": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_10L\\Lab10-02.exe": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_10L\\Lab10-03.exe": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_11L\\Lab11-01.exe": [
+      "Lab11_01_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_11L\\Lab11-02.dll": [
+      "Lab11_02_dll",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_11L\\Lab11-03.dll": [
+      "Lab11_03_dll",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_11L\\Lab11-03.exe": [
+      "Lab11_03_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_12L\\Lab12-01.dll": [
+      "Lab12_01_dll",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_12L\\Lab12-01.exe": [
+      "Lab12_01_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_12L\\Lab12-02.exe": [
+      "Lab12_02_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_12L\\Lab12-03.exe": [
+      "Lab12_03_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_12L\\Lab12-04.exe": [
+      "lab14exe",
+      "Lab12_04_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_13L\\Lab13-01.exe": [
+      "lab12exe",
+      "Lab13_01_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_13L\\Lab13-02.exe": [
+      "Lab13_02_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_13L\\Lab13-03.exe": [
+      "Lab13_03_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_14L\\Lab14-01.exe": [
+      "Lab14_01_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_14L\\Lab14-02.exe": [
+      "lab12exe",
+      "Lab14_02_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_14L\\Lab14-03.exe": [
+      "lab12exe",
+      "Lab14_03_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_15L\\Lab15-02.exe": [
+      "lab12exe"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_15L\\Lab15-03.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_16L\\Lab16-01.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab03_04"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_16L\\Lab16-02.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_16L\\Lab16-03.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_17L\\Lab17-01.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab07_01"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_17L\\Lab17-03.exe": [
+      "Lab12_02_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_17L\\Lab17-02.dll": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_18L\\Lab18-02.exe": [
+      "lab13exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_18L\\Lab18-04.exe": [
+      "lab12exe"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_19L\\Lab19-02.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_19L\\shellcode_launcher.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\BIN101.bin": [
+      "Lab12_04_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-01.exe": [
+      "lab11exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-01.dll": [
+      "lab11dll",
+      "Lab03_03",
+      "Lab07_03_dll"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-02.exe": [
+      "lab12exe"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-03.exe": [
+      "lab13exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\unpacked.exe": [
+      "lab13exe",
+      "Lab03_03",
+      "Lab07_02"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-04.exe": [
+      "lab14exe",
+      "Lab12_04_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_20L\\Lab20-01.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_20L\\Lab20-02.exe": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_20L\\Lab20-03.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_21L\\Lab21-01.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_3L\\Lab03-01.exe": [
+      "Lab03_01"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_21L\\Lab21-02.exe": [
+      "Lab12_01_dll",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_3L\\Lab03-02.dll": [
+      "lab12exe",
+      "Lab03_02",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_3L\\Lab03-03.exe": [
+      "Lab12_02_exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_6L\\Lab06-02.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab06_01",
+      "Lab06_02"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_5L\\Lab05-01.dll": [
+      "lab12exe",
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_6L\\Lab06-01.exe": [
+      "Lab03_03",
+      "Lab06_01"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_6L\\Lab06-03.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab06_01",
+      "Lab06_02",
+      "Lab06_03",
+      "Lab06_04"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_6L\\Lab06-04.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab06_01",
+      "Lab06_03",
+      "Lab06_04"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_7L\\Lab07-02.exe": [
+      "Lab07_02"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_7L\\Lab07-03.exe": [
+      "Lab03_03",
+      "Lab07_03_exe"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_7L\\Lab07_01.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab07_01"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_7L\\Lab07-03.dll": [
+      "lab11dll",
+      "Lab03_03",
+      "Lab07_03_dll"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\DLL1.dll": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\DLL2.dll": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\DLL3.dll": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\Lab09-02.exe": [
+      "Lab03_03"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\Lab09-01.exe": [
+      "lab12exe",
+      "Lab03_03",
+      "Lab03_04"
+    ],
+    "E:\\大三上\\恶意代码分析与防治\\课程恶意代码\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_9L\\Lab09-03.exe": [
+      "Lab03_03"
+    ]
+  }
+}

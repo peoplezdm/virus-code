@@ -1,0 +1,12 @@
+title: COURSE REAL04 PLACEHOLDER
+id: 00000000-0000-0000-0000-000000000204
+status: experimental
+description: "TODO: 额外真实样本04 的日志检测规则（Sigma 占位）"
+level: low
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image: "__TODO__"
+  condition: selection
