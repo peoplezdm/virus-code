@@ -38,7 +38,11 @@ def _json_response(handler: BaseHTTPRequestHandler, status: int, payload: Dict[s
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
-    handler.wfile.write(body)
+    try:
+        handler.wfile.write(body)
+    except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError, OSError):
+        # Client disconnected while we were responding.
+        return
 
 
 def _serve_static(handler: BaseHTTPRequestHandler, rel_path: str) -> bool:
@@ -61,7 +65,10 @@ def _serve_static(handler: BaseHTTPRequestHandler, rel_path: str) -> bool:
     handler.send_header("Content-Type", ctype)
     handler.send_header("Content-Length", str(len(data)))
     handler.end_headers()
-    handler.wfile.write(data)
+    try:
+        handler.wfile.write(data)
+    except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError, OSError):
+        return True
     return True
 
 

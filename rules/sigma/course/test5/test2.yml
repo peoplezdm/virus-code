@@ -1,0 +1,14 @@
+title: 重启电脑提示
+author: 张德民
+date: '2025-11-12'
+
+logsource:
+  product: windows
+  service: sysmon
+  category: process_creation
+detection:
+  selection:
+   Image|contains: 'wlrmdr.exe'
+   CommandLine|contains: "Windows 将在一分钟后关闭。"
+  condition: selection
+level: critical

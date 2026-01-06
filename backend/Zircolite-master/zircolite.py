@@ -288,7 +288,9 @@ class JSONFlattener:
         
         # If filesize is not zero
         if os.stat(file).st_size != 0:
-            with open(str(file), 'r', encoding='utf-8') as JSONFile:
+            # Some Windows EVTX/JSON pipelines may emit non-UTF8 bytes in string fields.
+            # Avoid hard-crashing on decode errors; keep structural JSON intact.
+            with open(str(file), 'r', encoding='utf-8', errors='replace') as JSONFile:
                 filename = os.path.basename(file)
                 logs = JSONFile
                 # If the file is a json array

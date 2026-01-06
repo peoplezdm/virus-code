@@ -1,0 +1,13 @@
+title: 创建文件@WanaDecryptor@.exe
+author: 张德民
+date: '2025-11-12'
+
+logsource:
+  product: windows
+  service: sysmon
+  category: file_event
+detection:
+  selection:
+   TargetFilename|contains: '@WanaDecryptor@.exe'
+  condition: selection
+level: high

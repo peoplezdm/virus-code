@@ -1,28 +1,11 @@
 {
   "engine": "yara",
   "engine_path": "E:\\大三上\\恶意代码分析与防治\\virus-code\\backend\\yara64.exe",
-  "target": "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名",
+  "target": "E:\\大三上\\恶意代码分析与防治\\virus-code\\rules\\sigma\\course\\test1\\mytest1.evtx",
   "rules_dir": "E:\\大三上\\恶意代码分析与防治\\virus-code\\rules\\yara",
   "rules_count": 35,
   "threads": 4,
-  "hits_files": 5,
-  "hits_total": 6,
-  "detections": {
-    "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名\\4-yhzll": [
-      "exam_4_yhzll"
-    ],
-    "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名\\3-BUG32": [
-      "exam_3_bug32"
-    ],
-    "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名\\1-WannaCrypt0r": [
-      "lab12exe",
-      "exam_1_wannacrypt0r"
-    ],
-    "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名\\5-BossDaMajor": [
-      "exam_5_bossdamaior"
-    ],
-    "E:\\大三上\\恶意代码分析与防治\\恶意代码教学样本-在沙盒中修改文件名\\2-hrtg": [
-      "exam_2_hrtg"
-    ]
-  }
+  "hits_files": 0,
+  "hits_total": 0,
+  "detections": {}
 }

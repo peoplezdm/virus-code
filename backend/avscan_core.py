@@ -3,9 +3,11 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
+import locale
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -17,6 +19,26 @@ OUT_DIR = PROJECT_ROOT / "out"
 
 class UserFacingError(RuntimeError):
     pass
+
+
+_ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+
+
+def _decode_cli_bytes(data: bytes) -> str:
+    if not data:
+        return ""
+
+    # Prefer UTF-8 when possible, but fall back to the OS preferred encoding
+    # (e.g. cp936/gbk on many Chinese Windows machines) for readable Chinese output.
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        enc = locale.getpreferredencoding(False) or "utf-8"
+        return data.decode(enc, errors="replace")
+
+
+def _strip_ansi(s: str) -> str:
+    return _ANSI_ESCAPE_RE.sub("", s or "")
 
 
 def resolve_user_path(path_str: str, *, base_dir: Path = PROJECT_ROOT) -> Path:
@@ -230,30 +252,60 @@ def run_sigma_scan_with_zircolite(
     out_file = resolve_user_path(out_path, base_dir=PROJECT_ROOT) if out_path else (OUT_DIR / "scan_logs.json")
     ensure_parent_dir(out_file)
 
-    max_events_i = int(max_events) if max_events else 0
-    truncated_events_file, truncated = _truncate_events_if_needed(events_file, max_events=max_events_i)
-
-    input_mode = _detect_zircolite_input_mode(truncated_events_file)
-    input_flag = "--jsonl" if input_mode == "jsonl" else "--json-array-input"
-
     python_exe = os.environ.get("PYTHON") or sys.executable
 
-    cmd = [
-        python_exe,
-        str(zir_py),
-        "--events",
-        str(truncated_events_file),
-        "--ruleset",
-        str(rules_path),
-        input_flag,
-        "-o",
-        str(out_file),
-    ]
+    # Zircolite supports multiple input formats. For EVTX, do NOT pass JSON flags.
+    # Otherwise Zircolite will try to parse the binary EVTX as JSON and fail.
+    if events_file.suffix.lower() == ".evtx":
+        input_mode = "evtx"
+        truncated_events_file = events_file
+        truncated = False
+        cmd = [
+            python_exe,
+            str(zir_py),
+            "--events",
+            str(events_file),
+            "--ruleset",
+            str(rules_path),
+            "--pipeline",
+            "sysmon",
+            "-o",
+            str(out_file),
+        ]
+    else:
+        max_events_i = int(max_events) if max_events else 0
+        truncated_events_file, truncated = _truncate_events_if_needed(events_file, max_events=max_events_i)
 
-    proc = subprocess.run(cmd, cwd=str(zir_dir), capture_output=True, text=True, encoding="utf-8", errors="replace")
+        input_mode = _detect_zircolite_input_mode(truncated_events_file)
+        input_flag = "--jsonl" if input_mode == "jsonl" else "--json-array-input"
+
+        cmd = [
+            python_exe,
+            str(zir_py),
+            "--events",
+            str(truncated_events_file),
+            "--ruleset",
+            str(rules_path),
+            input_flag,
+            "-o",
+            str(out_file),
+        ]
+
+    proc = subprocess.run(cmd, cwd=str(zir_dir), capture_output=True)
+
+    stdout_text = _strip_ansi(_decode_cli_bytes(proc.stdout))
+    stderr_text = _strip_ansi(_decode_cli_bytes(proc.stderr))
 
     if proc.returncode != 0:
-        msg = proc.stderr.strip() or proc.stdout.strip()
+        msg = (stderr_text.strip() or stdout_text.strip())
+        msg_l = msg.lower()
+        if "unicodedecodeerror" in msg_l or "codec can't decode" in msg_l:
+            raise UserFacingError(
+                "Zircolite 读取事件文件时发生编码错误（UnicodeDecodeError）。\n"
+                "请确保输入的 .json/.jsonl 为 UTF-8 编码；若文件来自 EVTX 转换，建议重新导出为 UTF-8。\n"
+                f"退出码 {proc.returncode}: {msg}"
+            )
+
         raise UserFacingError(
             "Zircolite 执行失败。常见原因：未安装 Zircolite 依赖（需要 pip 安装 requirements.txt）。\n"
             f"退出码 {proc.returncode}: {msg}"
@@ -280,7 +332,7 @@ def run_sigma_scan_with_zircolite(
         "input_mode": input_mode,
         "out_path": str(out_file),
         "hits": hits,
-        "stdout_tail": "\n".join(proc.stdout.splitlines()[-40:]),
+        "stdout_tail": "\n".join(stdout_text.splitlines()[-40:]),
     }
 
 

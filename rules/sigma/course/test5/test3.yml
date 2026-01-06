@@ -1,0 +1,19 @@
+title: 创建了恶意文件
+author: 张德民
+date: '2025-11-12'
+
+logsource:
+  product: windows
+  service: sysmon
+  category: file_event
+detection:
+  selection:
+   TargetFilename|endswith:
+      - '.vbs'
+      - '.js'
+      - '.wsf'
+      - '.bat'
+      - '.cmd'
+   Image|contains: '\5-BossDaMajor.exe' 
+  condition: selection
+level: high
