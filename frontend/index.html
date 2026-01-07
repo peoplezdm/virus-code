@@ -90,6 +90,16 @@
         <button class="secondary" id="btn_clear">清空</button>
         <span id="status" class="status">就绪</span>
       </div>
+
+      <div class="progress" id="progress_wrap" aria-hidden="true">
+        <div class="progress_meta">
+          <span id="progress_text" class="progress_text">—</span>
+          <span id="progress_pct" class="progress_pct">—</span>
+        </div>
+        <div class="progress_track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="progress_inner" class="progress_inner" style="width:0%"></div>
+        </div>
+      </div>
       <pre id="output" class="output"></pre>
     </section>
 

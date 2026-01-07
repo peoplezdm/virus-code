@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import threading
+import time
 import traceback
+import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from avscan_core import (
     OUT_DIR,
@@ -18,6 +21,92 @@ from avscan_core import (
 
 
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
+
+
+_JOBS_LOCK = threading.Lock()
+_JOBS: Dict[str, Dict[str, Any]] = {}
+
+
+def _now_ts() -> float:
+    return time.time()
+
+
+def _new_job(kind: str) -> Dict[str, Any]:
+    job_id = uuid.uuid4().hex
+    job = {
+        "id": job_id,
+        "kind": kind,
+        "status": "queued",  # queued|running|succeeded|failed
+        "created_at": _now_ts(),
+        "started_at": None,
+        "finished_at": None,
+        "current": {"stage": None, "message": None, "progress": None},
+        "logs": [],
+        "result": None,
+        "error": None,
+    }
+    with _JOBS_LOCK:
+        _JOBS[job_id] = job
+    return job
+
+
+def _job_log(job_id: str, message: str) -> None:
+    entry = {"ts": _now_ts(), "message": str(message)}
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job:
+            return
+        job["logs"].append(entry)
+
+
+def _job_update(
+    job_id: str,
+    *,
+    stage: Optional[str] = None,
+    message: Optional[str] = None,
+    progress: Optional[int] = None,
+) -> None:
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job:
+            return
+        cur = job.get("current") or {}
+        if stage is not None:
+            cur["stage"] = stage
+        if message is not None:
+            cur["message"] = message
+        if progress is not None:
+            cur["progress"] = int(progress)
+        job["current"] = cur
+
+
+def _job_start(job_id: str) -> None:
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job:
+            return
+        job["status"] = "running"
+        job["started_at"] = _now_ts()
+
+
+def _job_finish_success(job_id: str, result: Dict[str, Any]) -> None:
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job:
+            return
+        job["status"] = "succeeded"
+        job["finished_at"] = _now_ts()
+        job["result"] = result
+
+
+def _job_finish_error(job_id: str, error: str) -> None:
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+        if not job:
+            return
+        job["status"] = "failed"
+        job["finished_at"] = _now_ts()
+        job["error"] = str(error)
 
 
 def _read_json_body(handler: BaseHTTPRequestHandler) -> Dict[str, Any]:
@@ -77,6 +166,17 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def do_GET(self) -> None:
+        if self.path.startswith("/api/jobs/"):
+            job_id = self.path[len("/api/jobs/") :].strip().strip("/")
+            with _JOBS_LOCK:
+                job = _JOBS.get(job_id)
+                payload = json.loads(json.dumps(job)) if job else None
+            if not payload:
+                _json_response(self, 404, {"error": "Not Found"})
+                return
+            _json_response(self, 200, payload)
+            return
+
         if self.path.startswith("/api/"):
             _json_response(self, 405, {"error": "Method Not Allowed"})
             return
@@ -90,34 +190,85 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if self.path == "/api/scan-files":
                 body = _read_json_body(self)
-                result = run_yara_scan(
-                    target=str(body.get("target") or ""),
-                    yara_rules_dir=body.get("yara_rules_dir"),
-                    out_path=body.get("out_path"),
-                    threads=int(body.get("threads") or 4),
-                )
-                _json_response(self, 200, result)
+                job = _new_job("scan-files")
+
+                def worker() -> None:
+                    _job_start(job["id"])
+                    _job_log(job["id"], "任务开始：文件扫描（YARA）")
+                    try:
+                        result = run_yara_scan(
+                            target=str(body.get("target") or ""),
+                            yara_rules_dir=body.get("yara_rules_dir"),
+                            out_path=body.get("out_path"),
+                            threads=int(body.get("threads") or 4),
+                            progress_cb=lambda stage, message, percent: (
+                                _job_update(job["id"], stage=stage, message=message, progress=percent),
+                                _job_log(job["id"], message),
+                            ),
+                        )
+                        _job_finish_success(job["id"], result)
+                        _job_log(job["id"], "任务完成：文件扫描（YARA）")
+                    except Exception as e:
+                        _job_finish_error(job["id"], str(e))
+                        _job_log(job["id"], f"任务失败：{e}")
+
+                threading.Thread(target=worker, daemon=True).start()
+                _json_response(self, 202, {"job_id": job["id"], "status_url": f"/api/jobs/{job['id']}"})
                 return
 
             if self.path == "/api/scan-logs":
                 body = _read_json_body(self)
-                result = run_sigma_scan_with_zircolite(
-                    events_path=str(body.get("events_path") or ""),
-                    sigma_rules_dir=body.get("sigma_rules_dir"),
-                    out_path=body.get("out_path"),
-                    max_events=int(body.get("max_events") or 0),
-                )
-                _json_response(self, 200, result)
+                job = _new_job("scan-logs")
+
+                def worker() -> None:
+                    _job_start(job["id"])
+                    _job_log(job["id"], "任务开始：日志扫描（Sigma/Zircolite）")
+                    try:
+                        result = run_sigma_scan_with_zircolite(
+                            events_path=str(body.get("events_path") or ""),
+                            sigma_rules_dir=body.get("sigma_rules_dir"),
+                            out_path=body.get("out_path"),
+                            max_events=int(body.get("max_events") or 0),
+                            progress_cb=lambda stage, message, percent: (
+                                _job_update(job["id"], stage=stage, message=message, progress=percent),
+                                _job_log(job["id"], message),
+                            ),
+                        )
+                        _job_finish_success(job["id"], result)
+                        _job_log(job["id"], "任务完成：日志扫描（Sigma/Zircolite）")
+                    except Exception as e:
+                        _job_finish_error(job["id"], str(e))
+                        _job_log(job["id"], f"任务失败：{e}")
+
+                threading.Thread(target=worker, daemon=True).start()
+                _json_response(self, 202, {"job_id": job["id"], "status_url": f"/api/jobs/{job['id']}"})
                 return
 
             if self.path == "/api/evaluate":
                 body = _read_json_body(self)
-                result = evaluate_binary_detection(
-                    truth_csv=str(body.get("truth_csv") or ""),
-                    scan_json=str(body.get("scan_json") or ""),
-                    out_path=body.get("out_path"),
-                )
-                _json_response(self, 200, result)
+                job = _new_job("evaluate")
+
+                def worker() -> None:
+                    _job_start(job["id"])
+                    _job_log(job["id"], "任务开始：指标评测（evaluate）")
+                    try:
+                        result = evaluate_binary_detection(
+                            truth_csv=str(body.get("truth_csv") or ""),
+                            scan_json=str(body.get("scan_json") or ""),
+                            out_path=body.get("out_path"),
+                            progress_cb=lambda stage, message, percent: (
+                                _job_update(job["id"], stage=stage, message=message, progress=percent),
+                                _job_log(job["id"], message),
+                            ),
+                        )
+                        _job_finish_success(job["id"], result)
+                        _job_log(job["id"], "任务完成：指标评测（evaluate）")
+                    except Exception as e:
+                        _job_finish_error(job["id"], str(e))
+                        _job_log(job["id"], f"任务失败：{e}")
+
+                threading.Thread(target=worker, daemon=True).start()
+                _json_response(self, 202, {"job_id": job["id"], "status_url": f"/api/jobs/{job['id']}"})
                 return
 
             _json_response(self, 404, {"error": "Not Found"})

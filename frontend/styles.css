@@ -11,7 +11,14 @@ input{width:100%;padding:10px 10px;border-radius:10px;border:1px solid var(--bor
 .row{display:flex;gap:10px;align-items:center;margin-top:12px}
 button{padding:10px 12px;border:0;border-radius:10px;background:var(--btn);color:white;font-weight:600;cursor:pointer}
 button.secondary{background:var(--btn2);color:var(--text);border:1px solid var(--border)}
+button:disabled{opacity:.6;cursor:not-allowed}
 .status{color:var(--muted);font-size:12px}
+.progress{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0d1530}
+.progress_meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.progress_text{color:var(--muted);font-size:12px}
+.progress_pct{color:var(--muted);font-size:12px}
+.progress_track{height:10px;border-radius:999px;background:#070b18;border:1px solid var(--border);overflow:hidden}
+.progress_inner{height:100%;width:0%;background:var(--btn)}
 .output{min-height:180px;max-height:420px;overflow:auto;background:#070b18;border:1px solid var(--border);border-radius:10px;padding:12px}
 .footer{color:var(--muted);font-size:12px;margin-top:10px}
 @media (max-width: 720px){.grid{grid-template-columns:1fr}}
