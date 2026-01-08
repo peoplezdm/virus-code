@@ -2,9 +2,9 @@
 
 本项目提供一个最小可用的本地 Web 界面与后端 API：
 
-- **文件扫描（YARA）**：调用 `backend/yara64.exe` 扫描文件/目录
-- **日志扫描（Sigma）**：调用官方仓库版 Zircolite：`backend/Zircolite-master/zircolite.py`
-- **指标评测（evaluate）**：对文件扫描结果做二分类指标计算
+- **文件扫描（YARA）**：
+- **日志扫描（Sigma）**：
+- **指标评测（evaluate）**：
 
 > 运行环境：Windows（PowerShell）
 
@@ -199,3 +199,4 @@ rules/
 	sigma/                  # 你的 Sigma 规则
 out/                     # 输出目录
 ```
+
