@@ -59,39 +59,6 @@ def _strip_ansi(s: str) -> str:
     return _ANSI_ESCAPE_RE.sub("", s or "")
 
 
-_YARA_FATAL_RE = re.compile(r"(^|\n)\s*error:\s*", re.IGNORECASE)
-
-
-def _yara_has_fatal_error(stderr_text: str) -> bool:
-    return bool(_YARA_FATAL_RE.search(stderr_text or ""))
-
-
-def _run_yara(
-    cmd: List[str],
-    *,
-    cwd: Optional[Path] = None,
-) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        cmd,
-        cwd=str(cwd) if cwd else None,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-
-
-def _summarize_yara_error(stderr_text: str, *, max_lines: int = 10) -> str:
-    s = _strip_ansi(stderr_text or "").strip()
-    if not s:
-        return ""
-    lines = [ln.strip() for ln in s.splitlines() if ln.strip()]
-    # Prefer the first few error lines.
-    err_lines = [ln for ln in lines if ln.lower().startswith("error:")]
-    picked = err_lines[:max_lines] if err_lines else lines[:max_lines]
-    return "\n".join(picked)
-
-
 def resolve_user_path(path_str: str, *, base_dir: Path = PROJECT_ROOT) -> Path:
     if not path_str:
         raise UserFacingError("路径不能为空")
@@ -198,10 +165,16 @@ def run_yara_scan(
     threads: int = 4,
     progress_cb: Optional[ProgressCallback] = None,
 ) -> Dict[str, Any]:
-    _progress(progress_cb, "prepare", "正在检查 YARA 可执行文件...", 5)
-    yara_exe = BACKEND_DIR / "yara64.exe"
-    if not yara_exe.is_file():
-        raise UserFacingError(f"找不到 YARA 可执行文件: {yara_exe}")
+    _progress(progress_cb, "prepare", "正在初始化 YARA 引擎（yara-python）...", 5)
+    try:
+        import yara  # type: ignore
+    except Exception as e:
+        raise UserFacingError(
+            "未安装 yara-python，无法使用内置 YARA 引擎。\n"
+            "请在项目根目录执行：\n"
+            "  python -m pip install yara-python\n\n"
+            f"原始错误：{e}"
+        )
 
     _progress(progress_cb, "prepare", "正在解析目标路径...", 10)
     target_path = resolve_user_path(target)
@@ -218,7 +191,7 @@ def run_yara_scan(
     _progress(progress_cb, "rules", "正在收集 YARA 规则文件...", 20)
     rule_files = _collect_yara_rule_files(rules_dir)
 
-    # Many third-party rule packs contain rules incompatible with the bundled yara64.exe
+    # Many third-party rule packs contain rules incompatible with the local libyara build
     # (unknown modules, duplicated identifiers, syntax errors...). When compiling everything
     # into one large file, a single bad rule can make the whole scan silently return no hits.
     # To keep scans useful, we split large rule directories by top-level folder and skip
@@ -263,16 +236,54 @@ def run_yara_scan(
     detections_by_file: Dict[str, List[str]] = {}
     detections_lock = threading.Lock()
 
-    # Validate bundles once so we can skip ones that don't compile.
-    def validate_bundle(bundle_name: str, merged_path: Path, sample_file: Path) -> Optional[str]:
-        cmd_check: List[str] = [str(yara_exe), str(merged_path), str(sample_file)]
-        proc = _run_yara(cmd_check)
-        # Some yara builds may return 1 even when compilation fails; stderr is authoritative.
-        if _yara_has_fatal_error(proc.stderr):
-            return _summarize_yara_error(proc.stderr)
-        if proc.returncode not in (0, 1):
-            return _summarize_yara_error(proc.stderr) or (proc.stdout.strip() or f"退出码 {proc.returncode}")
-        return None
+    scan_errors: List[Dict[str, Any]] = []
+    scan_errors_lock = threading.Lock()
+
+    def _summarize_yara_python_error(err: Exception, *, max_lines: int = 10) -> str:
+        s = str(err or "").strip()
+        if not s:
+            return ""
+        lines = [ln.strip() for ln in s.splitlines() if ln.strip()]
+        return "\n".join(lines[:max_lines])
+
+    def _summarize_os_error(err: Exception) -> Dict[str, Any]:
+        if isinstance(err, OSError):
+            return {
+                "type": err.__class__.__name__,
+                "errno": getattr(err, "errno", None),
+                "winerror": getattr(err, "winerror", None),
+                "strerror": getattr(err, "strerror", None),
+                "message": str(err),
+            }
+        return {"type": err.__class__.__name__, "message": str(err)}
+
+    def _classify_file_open_issue(err: Exception) -> str:
+        # Best-effort human readable hint for common Windows failure reasons.
+        if isinstance(err, FileNotFoundError):
+            return "文件不存在或已被移动"
+        if isinstance(err, PermissionError):
+            return "无权限访问（可能需要管理员权限，或被安全软件拦截）"
+        if isinstance(err, OSError):
+            winerror = getattr(err, "winerror", None)
+            if winerror in {32}:  # ERROR_SHARING_VIOLATION
+                return "文件被占用（共享冲突）"
+            if winerror in {5}:  # ERROR_ACCESS_DENIED
+                return "拒绝访问（权限不足）"
+            if winerror in {206}:  # ERROR_FILENAME_EXCED_RANGE
+                return "路径过长（Windows MAX_PATH 限制）"
+        return "无法打开文件"
+
+    def compile_bundle(bundle_name: str, merged_path: Path) -> Tuple[Optional["yara.Rules"], Optional[str]]:
+        try:
+            src = merged_path.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            src = merged_path.read_text(errors="replace")
+
+        try:
+            rules = yara.compile(source=src)
+            return rules, None
+        except Exception as e:
+            return None, _summarize_yara_python_error(e)
 
     if target_path.is_dir():
         _progress(progress_cb, "prepare", "正在枚举待扫描文件...", 35)
@@ -281,25 +292,18 @@ def run_yara_scan(
         if total == 0:
             raise UserFacingError(f"目录下未找到可扫描文件: {target_path}")
 
-        # Validate bundles against the first file.
-        sample = scan_files[0]
-        valid_bundles: List[Tuple[str, Path]] = []
+        # Compile bundles once so we can skip ones that don't compile.
+        compiled_bundles: List[Tuple[str, "yara.Rules"]] = []
         for name, merged, files in bundles:
-            err = validate_bundle(name, merged, sample)
-            if err:
-                skipped_bundles.append(
-                    {
-                        "bundle": name,
-                        "rules_count": len(files),
-                        "error": err,
-                    }
-                )
-                brief = (err.splitlines()[0].strip() if err else "存在编译错误")
+            rules, err = compile_bundle(name, merged)
+            if err or rules is None:
+                skipped_bundles.append({"bundle": name, "rules_count": len(files), "error": err or "编译失败"})
+                brief = (str(err).splitlines()[0].strip() if err else "存在编译错误")
                 _progress(progress_cb, "rules", f"跳过规则组 {name}：{brief}", 36)
                 continue
-            valid_bundles.append((name, merged))
+            compiled_bundles.append((name, rules))
 
-        if not valid_bundles:
+        if not compiled_bundles:
             details = "\n\n".join(
                 [
                     f"[{b['bundle']}]\n{b['error']}"
@@ -330,26 +334,52 @@ def run_yara_scan(
         def scan_one(file_path: Path) -> List[Tuple[str, str]]:
             # Return list of (rule, file_path) detections
             hits: List[Tuple[str, str]] = []
-            for _bundle_name, merged in valid_bundles:
-                cmd_one: List[str] = [str(yara_exe), str(merged), str(file_path)]
-                proc = _run_yara(cmd_one)
-                if _yara_has_fatal_error(proc.stderr):
-                    # Bundle was validated, so this should be rare; treat as hard error.
-                    msg = _summarize_yara_error(proc.stderr) or "规则编译失败"
-                    raise UserFacingError(f"YARA 扫描失败（规则编译错误）: {msg}")
-                if proc.returncode not in (0, 1):
-                    msg = _summarize_yara_error(proc.stderr) or (proc.stdout.strip() or f"退出码 {proc.returncode}")
-                    raise UserFacingError(f"YARA 扫描文件失败: {file_path} ({msg})")
 
-                for line in proc.stdout.splitlines():
-                    line = line.strip()
-                    if not line:
-                        continue
-                    parts = line.split(maxsplit=1)
-                    if len(parts) != 2:
-                        continue
-                    rule, fpath = parts
-                    hits.append((rule, fpath))
+            # Preflight readability check to provide clearer diagnostics than libyara.
+            try:
+                with file_path.open("rb") as f:
+                    data = f.read()
+            except Exception as e:
+                reason = _classify_file_open_issue(e)
+                with scan_errors_lock:
+                    scan_errors.append(
+                        {
+                            "file": str(file_path),
+                            "stage": "open",
+                            "reason": reason,
+                            "detail": _summarize_os_error(e),
+                        }
+                    )
+                return hits
+
+            for _bundle_name, rules in compiled_bundles:
+                try:
+                    # On Windows, libyara may fail to open files when the path contains
+                    # non-ASCII characters. Matching on raw bytes avoids that.
+                    matches = rules.match(data=data)
+                except Exception as e:
+                    msg = _summarize_yara_python_error(e) or "未知错误"
+                    # For directory scans, one bad/unreadable file should not fail the entire task.
+                    reason = "YARA 扫描失败"
+                    if "could not open file" in msg.lower():
+                        reason = "无法打开文件（YARA）"
+                    with scan_errors_lock:
+                        scan_errors.append(
+                            {
+                                "file": str(file_path),
+                                "stage": "match",
+                                "reason": reason,
+                                "detail": {"type": e.__class__.__name__, "message": msg},
+                            }
+                        )
+                    return hits
+
+                for m in matches or []:
+                    try:
+                        rule_name = getattr(m, "rule", None) or str(m)
+                    except Exception:
+                        rule_name = str(m)
+                    hits.append((str(rule_name), str(file_path)))
             return hits
 
         _progress(progress_cb, "run", f"开始并发扫描：共 {total} 个文件...", 30)
@@ -359,7 +389,20 @@ def run_yara_scan(
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = [ex.submit(scan_one, p) for p in scan_files]
             for fut in as_completed(futures):
-                hits = fut.result()
+                try:
+                    hits = fut.result()
+                except Exception as e:
+                    # Should be rare because scan_one handles per-file errors.
+                    with scan_errors_lock:
+                        scan_errors.append(
+                            {
+                                "file": None,
+                                "stage": "worker",
+                                "reason": "线程执行异常",
+                                "detail": _summarize_os_error(e),
+                            }
+                        )
+                    hits = []
                 if hits:
                     with detections_lock:
                         for rule, fpath in hits:
@@ -372,21 +415,15 @@ def run_yara_scan(
         emit_progress(force=True)
     else:
         # Single file: run all valid bundles and aggregate results.
-        valid_bundles: List[Tuple[str, Path]] = []
+        compiled_bundles: List[Tuple[str, "yara.Rules"]] = []
         for name, merged, files in bundles:
-            err = validate_bundle(name, merged, target_path)
-            if err:
-                skipped_bundles.append(
-                    {
-                        "bundle": name,
-                        "rules_count": len(files),
-                        "error": err,
-                    }
-                )
+            rules, err = compile_bundle(name, merged)
+            if err or rules is None:
+                skipped_bundles.append({"bundle": name, "rules_count": len(files), "error": err or "编译失败"})
                 continue
-            valid_bundles.append((name, merged))
+            compiled_bundles.append((name, rules))
 
-        if not valid_bundles:
+        if not compiled_bundles:
             details = "\n\n".join(
                 [
                     f"[{b['bundle']}]\n{b['error']}"
@@ -400,30 +437,33 @@ def run_yara_scan(
             )
 
         _progress(progress_cb, "run", "正在执行 YARA 扫描...", 60)
-        for _bundle_name, merged in valid_bundles:
-            cmd: List[str] = [str(yara_exe), "-p", str(threads_i), str(merged), str(target_path)]
-            proc = _run_yara(cmd)
-            if _yara_has_fatal_error(proc.stderr):
-                msg = _summarize_yara_error(proc.stderr) or "规则编译失败"
-                raise UserFacingError(f"YARA 执行失败（规则编译错误）: {msg}")
-            if proc.returncode not in (0, 1):
-                raise UserFacingError(
-                    f"YARA 执行失败(退出码 {proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}"
-                )
 
-            for line in proc.stdout.splitlines():
-                line = line.strip()
-                if not line:
-                    continue
-                parts = line.split(maxsplit=1)
-                if len(parts) != 2:
-                    continue
-                rule, fpath = parts
-                detections_by_file.setdefault(fpath, []).append(rule)
+        try:
+            with target_path.open("rb") as f:
+                data = f.read()
+        except Exception as e:
+            reason = _classify_file_open_issue(e)
+            raise UserFacingError(f"YARA 无法读取目标文件: {target_path}（{reason}）")
+
+        for _bundle_name, rules in compiled_bundles:
+            try:
+                matches = rules.match(data=data)
+            except Exception as e:
+                msg = _summarize_yara_python_error(e) or "未知错误"
+                raise UserFacingError(f"YARA 执行失败: {msg}")
+
+            for m in matches or []:
+                try:
+                    rule_name = getattr(m, "rule", None) or str(m)
+                except Exception:
+                    rule_name = str(m)
+                detections_by_file.setdefault(str(target_path), []).append(str(rule_name))
 
     result: Dict[str, Any] = {
         "engine": "yara",
-        "engine_path": str(yara_exe),
+        "engine_impl": "yara-python",
+        "engine_path": getattr(yara, "__file__", "yara-python"),
+        "engine_version": getattr(yara, "__version__", None),
         "target": str(target_path),
         "rules_dir": str(rules_dir),
         "rules_count": len(rule_files),
@@ -436,6 +476,8 @@ def run_yara_scan(
         "hits_files": len(detections_by_file),
         "hits_total": sum(len(v) for v in detections_by_file.values()),
         "detections": detections_by_file,
+        "scan_errors": scan_errors,
+        "scan_errors_total": len(scan_errors),
     }
 
     out_file = resolve_user_path(out_path, base_dir=PROJECT_ROOT) if out_path else (OUT_DIR / "scan_files.json")

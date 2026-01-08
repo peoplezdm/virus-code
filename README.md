@@ -2,7 +2,7 @@
 
 本项目提供一个最小可用的本地 Web 界面与后端 API：
 
-- **文件扫描（YARA）**：调用 `backend/yara64.exe` 扫描文件/目录
+- **文件扫描（YARA）**：使用 `yara-python` 扫描文件/目录（不再依赖 `yara64.exe`）
 - **日志扫描（Sigma）**：调用官方仓库版 Zircolite：`backend/Zircolite-master/zircolite.py`
 - **指标评测（evaluate）**：对文件扫描结果做二分类指标计算
 
@@ -35,6 +35,14 @@ python -m venv .venv
 > `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
 ### 1.3 安装 Zircolite 依赖（Sigma 扫描必需）
+
+### 1.3.1 安装后端依赖（YARA 引擎必需）
+
+文件扫描（YARA）使用 `yara-python`，在项目根目录执行：
+
+```powershell
+python -m pip install -r .\backend\requirements.txt
+```
 
 Sigma 扫描通过 `backend/Zircolite-master/zircolite.py` 执行，因此需要安装其依赖。
 
@@ -189,8 +197,8 @@ python -m pip install -r .\backend\Zircolite-master\requirements.txt
 ```text
 backend/                 # 后端 API + 官方工具
 	server.py              # HTTP 服务（同时提供静态前端）
-	avscan_core.py          # 调用 yara64.exe 与 Zircolite
-	yara64.exe
+	avscan_core.py          # YARA（yara-python）与 Zircolite
+	# yara64.exe（已不再需要，可留存）
 	Zircolite-master/
 
 frontend/                # Web 界面
