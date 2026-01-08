@@ -1,7 +1,29 @@
 /*
     This Yara ruleset is under the GNU-GPLv2 license (http://www.gnu.org/licenses/gpl-2.0.html) and open to any user or organization, as long as you use it under this license.
 */
+rule Big_Numbers0
+{
+	meta:
+		author = "_pusher_"
+		description = "Looks for big numbers 20:sized"
+		date = "2016-07"
+	strings:
+		$c0 = /[0-9a-fA-F]{20}/ fullword ascii
+	condition:
+		$c0
+}
 
+rule Big_Numbers1
+{
+	meta:
+		author = "_pusher_"
+		description = "Looks for big numbers 32:sized"
+		date = "2016-07"
+	strings:
+		$c0 = /[0-9a-fA-F]{32}/ fullword wide ascii
+	condition:
+		$c0
+}
 
 rule Big_Numbers2
 {
@@ -11,6 +33,18 @@ rule Big_Numbers2
 		date = "2016-07"
 	strings:
 		$c0 = /[0-9a-fA-F]{48}/ fullword wide ascii
+	condition:
+		$c0
+}
+
+rule Big_Numbers3
+{
+	meta:
+		author = "_pusher_"
+		description = "Looks for big numbers 64:sized"
+		date = "2016-07"
+	strings:
+        	$c0 = /[0-9a-fA-F]{64}/ fullword wide ascii
 	condition:
 		$c0
 }
@@ -46,6 +80,17 @@ rule Prime_Constants_char {
 		date = "2016-07"
 	strings:
 		$c0 = { 03 05 07 0B 0D 11 13 17 1D 1F 25 29 2B 2F 35 3B 3D 43 47 49 4F 53 59 61 65 67 6B 6D 71 7F 83 89 8B 95 97 9D A3 A7 AD B3 B5 BF C1 C5 C7 D3 DF E3 E5 E9 EF F1 FB }
+	condition:
+		$c0
+}
+
+rule Prime_Constants_long {
+	meta:
+		author = "_pusher_"
+		description = "List of primes [long]"
+		date = "2016-07"
+	strings:
+		$c0 = { 03 00 00 00 05 00 00 00 07 00 00 00 0B 00 00 00 0D 00 00 00 11 00 00 00 13 00 00 00 17 00 00 00 1D 00 00 00 1F 00 00 00 25 00 00 00 29 00 00 00 2B 00 00 00 2F 00 00 00 35 00 00 00 3B 00 00 00 3D 00 00 00 43 00 00 00 47 00 00 00 49 00 00 00 4F 00 00 00 53 00 00 00 59 00 00 00 61 00 00 00 65 00 00 00 67 00 00 00 6B 00 00 00 6D 00 00 00 71 00 00 00 7F 00 00 00 83 00 00 00 89 00 00 00 8B 00 00 00 95 00 00 00 97 00 00 00 9D 00 00 00 A3 00 00 00 A7 00 00 00 AD 00 00 00 B3 00 00 00 B5 00 00 00 BF 00 00 00 C1 00 00 00 C5 00 00 00 C7 00 00 00 D3 00 00 00 DF 00 00 00 E3 00 00 00 E5 00 00 00 E9 00 00 00 EF 00 00 00 F1 00 00 00 FB 00 00 00 }
 	condition:
 		$c0
 }
@@ -88,9 +133,29 @@ rule CRC32c_poly_Constant {
 		$c0
 }
 
+rule CRC32_poly_Constant {
+	meta:
+		author = "_pusher_"
+		description = "Look for CRC32 [poly]"
+		date = "2015-05"
+		version = "0.1"
+	strings:
+		$c0 = { 2083B8ED }
+	condition:
+		$c0
+}
 
-
-
+rule CRC32_table {
+	meta:
+		author = "_pusher_"
+		description = "Look for CRC32 table"
+		date = "2015-05"
+		version = "0.1"
+	strings:
+		$c0 = { 00 00 00 00 96 30 07 77 2C 61 0E EE BA 51 09 99 19 C4 6D 07 }
+	condition:
+		$c0
+}
 
 rule CRC32_table_lookup {
 	meta:
@@ -193,6 +258,28 @@ rule BLOWFISH_Constants {
 		6 of them
 }
 
+rule MD5_Constants {
+	meta:
+		author = "phoul (@phoul)"
+		description = "Look for MD5 constants"
+		date = "2014-01"
+		version = "0.2"
+	strings:
+		// Init constants
+		$c0 = { 67452301 }
+		$c1 = { efcdab89 }
+		$c2 = { 98badcfe }
+		$c3 = { 10325476 }
+		$c4 = { 01234567 }
+		$c5 = { 89ABCDEF }
+		$c6 = { FEDCBA98 }
+		$c7 = { 76543210 }
+		// Round 2
+		$c8 = { F4D50d87 }
+		$c9 = { 78A46AD7 }
+	condition:
+		5 of them
+}
 
 rule MD5_API {
 	meta:
@@ -226,7 +313,90 @@ rule RC6_Constants {
 		2 of them
 }
 
+rule RIPEMD160_Constants {
+	meta:
+		author = "phoul (@phoul)"
+		description = "Look for RIPEMD-160 constants"
+		date = "2014-01"
+		version = "0.1"
+	strings:
+		$c0 = { 67452301 }
+		$c1 = { EFCDAB89 }
+		$c2 = { 98BADCFE }
+		$c3 = { 10325476 }
+		$c4 = { C3D2E1F0 }
+		$c5 = { 01234567 }
+		$c6 = { 89ABCDEF }
+		$c7 = { FEDCBA98 }
+		$c8 = { 76543210 }
+		$c9 = { F0E1D2C3 }
+	condition:
+		5 of them
+}
 
+rule SHA1_Constants {
+	meta:
+		author = "phoul (@phoul)"
+		description = "Look for SHA1 constants"
+		date = "2014-01"
+		version = "0.1"
+	strings:
+		$c0 = { 67452301 }
+		$c1 = { EFCDAB89 }
+		$c2 = { 98BADCFE }
+		$c3 = { 10325476 }
+		$c4 = { C3D2E1F0 }
+		$c5 = { 01234567 }
+		$c6 = { 89ABCDEF }
+		$c7 = { FEDCBA98 }
+		$c8 = { 76543210 }
+		$c9 = { F0E1D2C3 }
+		//added by _pusher_ 2016-07 - last round
+		$c10 = { D6C162CA }
+	condition:
+		5 of them
+}
+
+rule SHA512_Constants {
+	meta:
+		author = "phoul (@phoul)"
+		description = "Look for SHA384/SHA512 constants"
+		date = "2014-01"
+		version = "0.1"
+	strings:
+		$c0 = { 428a2f98 }
+		$c1 = { 982F8A42 }
+		$c2 = { 71374491 }
+		$c3 = { 91443771 }
+		$c4 = { B5C0FBCF }
+		$c5 = { CFFBC0B5 }
+		$c6 = { E9B5DBA5 }
+		$c7 = { A5DBB5E9 }
+		$c8 = { D728AE22 }
+		$c9 = { 22AE28D7 }
+	condition:
+		5 of them
+}
+
+rule SHA2_BLAKE2_IVs {
+	meta:
+		author = "spelissier"
+		description = "Look for SHA2/BLAKE2/Argon2 IVs"
+		date = "2019-12"
+		version = "0.1"
+	strings:
+		$c0 = { 67 E6 09 6A }
+		$c1 = { 85 AE 67 BB }
+		$c2 = { 72 F3 6E 3C }
+		$c3 = { 3A F5 4F A5 }
+		$c4 = { 7F 52 0E 51 }
+		$c5 = { 8C 68 05 9B }
+		$c6 = { AB D9 83 1F }
+		$c7 = { 19 CD E0 5B }
+
+	condition:
+		all of them
+}
 
 rule TEAN {
 	meta:
@@ -606,7 +776,16 @@ rule DES_Long
 		$c0
 }
 
-
+rule DES_sbox
+{	meta:
+		author = "_pusher_"
+		date = "2015-05"
+		description = "DES [sbox]"
+	strings:
+		$c0 = { 00 04 01 01 00 00 00 00 00 00 01 00 04 04 01 01 04 00 01 01 04 04 01 00 04 00 00 00 00 00 01 00 00 04 00 00 00 04 01 01 04 04 01 01 00 04 00 00 04 04 00 01 04 00 01 01 00 00 00 01 04 00 00 00 }
+	condition:
+		$c0
+}
 
 rule DES_pbox_long
 {	meta:
@@ -867,9 +1046,28 @@ rule RijnDael_AES
 		$c0
 }
 
+rule RijnDael_AES_CHAR
+{	meta:
+		author = "_pusher_"
+		description = "RijnDael AES (check2) [char]"
+		date = "2016-06"
+	strings:
+		$c0 = { 63 7C 77 7B F2 6B 6F C5 30 01 67 2B FE D7 AB 76 CA 82 C9 7D FA 59 47 F0 AD D4 A2 AF 9C A4 72 C0 }
+	condition:
+		$c0
+}
 
-
-
+rule ARIA_SB2
+{	meta:
+		author = "spelissier"
+		description = "Aria SBox 2"
+		date = "2020-12"
+		reference="http://210.104.33.10/ARIA/doc/ARIA-specification-e.pdf#page=7"
+	strings:
+		$c0 = { E2 4E 54 FC 94 C2 4A CC 62 0D 6A 46 3C 4D 8B D1 5E FA 64 CB B4 97 BE 2B BC 77 2E 03 D3 19 59 C1 }
+	condition:
+		$c0
+}
 
 rule RijnDael_AES_CHAR_inv
 {	meta:
@@ -1027,7 +1225,17 @@ rule pkcs8_private_key_information_syntax_standard
 }
 */
 
-
+rule BASE64_table {
+	meta:
+		author = "_pusher_"
+		description = "Look for Base64 table"
+		date = "2015-07"
+		version = "0.1"
+	strings:
+		$c0 = { 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F 50 51 52 53 54 55 56 57 58 59 5A 61 62 63 64 65 66 67 68 69 6A 6B 6C 6D 6E 6F 70 71 72 73 74 75 76 77 78 79 7A 30 31 32 33 34 35 36 37 38 39 2B 2F }
+	condition:
+		$c0
+}
 
 rule Delphi_Random {
 	meta:

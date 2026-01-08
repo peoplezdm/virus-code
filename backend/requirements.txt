@@ -1,0 +1,3 @@
+# Backend dependencies
+# YARA engine implemented via yara-python (no external yara64.exe needed)
+yara-python

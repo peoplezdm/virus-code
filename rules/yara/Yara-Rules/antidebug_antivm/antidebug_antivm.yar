@@ -32,7 +32,16 @@ rule DebuggerCheck__GlobalFlags : AntiDebug DebuggerCheck {
 		any of them
 }
 
-
+rule DebuggerCheck__QueryInfo : AntiDebug DebuggerCheck {
+	meta:
+		weight = 1
+		Author = "naxonez"
+		reference = "https://github.com/naxonez/yaraRules/blob/master/AntiDebugging.yara"
+	strings:
+		$ ="QueryInformationProcess"
+	condition:
+		any of them
+}
 
 rule DebuggerCheck__RemoteAPI : AntiDebug DebuggerCheck {
 	meta:
@@ -204,6 +213,17 @@ rule SEH__vba : AntiDebug SEH {
 		any of them
 }
 
+rule SEH__vectored : AntiDebug SEH {
+	meta:
+		weight = 1
+		Author = "naxonez"
+		reference = "https://github.com/naxonez/yaraRules/blob/master/AntiDebugging.yara"
+	strings:
+		$ = "AddVectoredExceptionHandler"
+		$ = "RemoveVectoredExceptionHandler"
+	condition:
+		any of them
+}
 
 // 20150909 - Issue #39 - Commented because of High FP rate
 /*
@@ -556,7 +576,17 @@ rule Check_UserNames
 }
 
 
+rule Check_OutputDebugStringA_iat
+{
 
+	meta:
+		Author = "http://twitter.com/j0sm1"
+		Description = "Detect in IAT OutputDebugstringA"
+		Date = "20/04/2015"
+
+	condition:
+		pe.imports("kernel32.dll","OutputDebugStringA")
+}
 
 // 20150909 - Issue #39 - Commented because of High FP rate
 /*
@@ -645,7 +675,21 @@ rule WMI_VM_Detect : WMI_VM_Detect
 
 }
 
-
+rule anti_dbg {
+    meta:
+        author = "x0r"
+        description = "Checks if being debugged"
+	version = "0.2"
+    strings:
+    	$d1 = "Kernel32.dll" nocase
+        $c1 = "CheckRemoteDebuggerPresent"
+        $c2 = "IsDebuggerPresent"
+        $c3 = "OutputDebugString"
+        $c4 = "ContinueDebugEvent"
+        $c5 = "DebugActiveProcess"
+    condition:
+        $d1 and 1 of ($c*)
+}
 
 rule anti_dbgtools {
     meta:
@@ -699,6 +743,16 @@ rule antisb_anubis {
         $p1 and $c1 and 1 of ($s*)
 }
 
+rule antisb_threatExpert {
+    meta:
+        author = "x0r"
+        description = "Anti-Sandbox checks for ThreatExpert"
+	version = "0.1"
+    strings:
+        $f1 = "dbghelp.dll" nocase
+    condition:
+        all of them
+}
 
 rule antisb_sandboxie {
     meta:

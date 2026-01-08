@@ -1,3 +1,48 @@
+rule Medusa_Malware {
+    meta:
+        description = "Detects Medusa banking trojan variants"
+        author = "Kadircan Kaya"
+        approver = "Yasin Kalli"
+        date = "2024-07-20"
+        version = "1.0"
+        reference = "https://www.cleafy.com/cleafy-labs/medusa-reborn-a-new-compact-variant-discovered"
+        copyright = "InfoSEC"
+
+    strings:
+        $medusa_strings = "Medusa" ascii nocase
+        $url1 = "a2a2a2a.life" ascii nocase
+        $url2 = "pemmbebebebebebe.info" ascii nocase
+        $url3 = "unkunknunkkkkk.info" ascii nocase
+        $url4 = "cincincintopcin.info" ascii nocase
+        $url5 = "tony1303sock.top" ascii nocase
+        $perm1 = "ACCESSIBILITY_SERVICE" ascii nocase
+        $perm2 = "BROADCAST_SMS" ascii nocase
+        $perm3 = "INTERNET" ascii nocase
+        $perm4 = "FOREGROUND_SERVICE" ascii nocase
+        $perm5 = "QUERY_ALL_PACKAGES" ascii nocase
+        $perm6 = "DELETE_PACKAGES" ascii nocase
+        $cmd1 = "destroyo" ascii nocase
+        $cmd2 = "permdrawover" ascii nocase
+        $cmd3 = "setoverlay" ascii nocase
+        $cmd4 = "take_scr" ascii nocase
+        $cmd5 = "update_sec" ascii nocase
+        $str1 = "android.permission.RECEIVE_SMS" ascii nocase
+        $str2 = "android.permission.SEND_SMS" ascii nocase
+        $str3 = "android.permission.READ_CONTACTS" ascii nocase
+        $str4 = "android.permission.WRITE_CONTACTS" ascii nocase
+        $str5 = "android.permission.CALL_PHONE" ascii nocase
+        $str6 = "android.permission.READ_PHONE_STATE" ascii nocase
+        $str7 = "android.permission.READ_SMS" ascii nocase
+        $str8 = "android.permission.WRITE_EXTERNAL_STORAGE" ascii nocase
+        $str9 = "android.permission.READ_EXTERNAL_STORAGE" ascii nocase
+        $hash1 = "d41d8cd98f00b204e9800998ecf8427e" ascii
+        $hash2 = "e2fc714c4727ee9395f324cd2e7f331f" ascii
+        $hash3 = "f6d6b2ff0d8f2bdc2e3f931bfc6ef5ff" ascii
+
+    condition:
+        any of ($medusa_strings, $url*, $perm*, $cmd*, $str*, $hash*)
+}
+
 rule Medusa_4K_Sports {
     meta:
         description = "Detects Medusa variant associated with '4K Sports'"

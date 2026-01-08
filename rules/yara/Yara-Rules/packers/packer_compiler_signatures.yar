@@ -5,7 +5,14 @@
 import "pe"
 import "math"
 
-
+rule IsPE32 : PECheck
+{
+	condition:
+		// MZ signature at offset 0 and ...
+		uint16(0) == 0x5A4D and
+		// ... PE signature at offset stored in MZ header at 0x3C
+		uint16(uint32(0x3C)+0x18) == 0x010B
+}
 
 rule IsPE64 : PECheck
 {
@@ -22,9 +29,30 @@ rule IsNET_EXE : PECheck
 		pe.imports ("mscoree.dll","_CorExeMain")
 }
 
+rule IsNET_DLL : PECheck
+{
+	condition:
+		pe.imports ("mscoree.dll","_CorDllMain")
+}
 
+rule IsDLL : PECheck
+{
+	condition:
+		// MZ signature at offset 0 and ...
+		uint16(0) == 0x5A4D and
+		// ... PE signature at offset stored in MZ header at 0x3C
+		(uint16(uint32(0x3C)+0x16) & 0x2000) == 0x2000
 
+}
 
+rule IsConsole : PECheck
+{
+	condition:
+		// MZ signature at offset 0 and ...
+		uint16(0) == 0x5A4D and
+		// ... PE signature at offset stored in MZ header at 0x3C
+		uint16(uint32(0x3C)+0x5C) == 0x0003
+}
 
 rule IsWindowsGUI : PECheck
 {
@@ -48,7 +76,22 @@ rule IsPacked : PECheck
 }
 
 
+rule HasOverlay : PECheck
+{
+	meta: 
+		author="_pusher_"
+		description = "Overlay Check"
+	condition:
+		// MZ signature at offset 0 and ...
+		uint16(0) == 0x5A4D and
+		// ... PE signature at offset stored in MZ header at 0x3C
+		uint32(uint32(0x3C)) == 0x00004550 and
+		//stupid check if last section is 0		
+		//not (pe.sections[pe.number_of_sections-1].raw_data_offset+pe.sections[pe.number_of_sections-1].raw_data_size) == 0x0 and
 
+		(pe.sections[pe.number_of_sections-1].raw_data_offset+pe.sections[pe.number_of_sections-1].raw_data_size) < filesize
+		
+}
 
 rule HasTaggantSignature : PECheck
 {
@@ -96,6 +139,23 @@ rule HasDigitalSignature : PECheck
 		//and  uint32(@a0) == (filesize-(pe.sections[pe.number_of_sections-1].raw_data_offset+pe.sections[pe.number_of_sections-1].raw_data_size))
 }
 
+rule HasDebugData : PECheck
+{
+	meta: 
+		author = "_pusher_"
+		description = "DebugData Check"
+		date="2016-07"
+	condition:
+		// MZ signature at offset 0 and ...
+		uint16(0) == 0x5A4D and
+		// ... PE signature at offset stored in MZ header at 0x3C
+		uint32(uint32(0x3C)) == 0x00004550 and
+		//orginal
+		//((uint32(uint32(0x3C)+0xA8) >0x0) and (uint32be(uint32(0x3C)+0xAC) >0x0))
+		//((uint16(uint32(0x3C)+0x18) & 0x200) >> 5) x64/x32
+		(IsPE32 or IsPE64) and
+		((uint32(uint32(0x3C)+0xA8+((uint16(uint32(0x3C)+0x18) & 0x200) >> 5)) >0x0) and (uint32be(uint32(0x3C)+0xAC+((uint16(uint32(0x3C)+0x18) & 0x200) >> 5)) >0x0))
+}
 
 rule IsBeyondImageSize : PECheck
 {

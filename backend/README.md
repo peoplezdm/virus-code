@@ -2,7 +2,7 @@
 
 本目录提供后端 API，负责调用下载的官方工具：
 
-- **YARA**：固定调用 `backend/yara64.exe`
+- **YARA**：使用 `yara-python`（纯 Python 调用 libyara，不再依赖 `yara64.exe`）
 - **Sigma**：固定调用官方仓库版 Zircolite：`backend/Zircolite-master/zircolite.py`
 
 ## 运行
@@ -27,6 +27,12 @@ python .\backend\server.py
   - body: `{ truth_csv, scan_json, out_path? }`
 
 ## 依赖（Sigma 扫描必需）
+
+文件扫描（YARA）使用 `yara-python`，先安装：
+
+```powershell
+python -m pip install -r .\backend\requirements.txt
+```
 
 Sigma 扫描会执行 Zircolite 的 Python 脚本，因此需要先安装依赖：
 

@@ -734,7 +734,33 @@ rule rat_webcam {
         all of them
 }
 
+rule win_mutex {
+    meta:
+        author = "x0r"
+        description = "Create or check mutex"
+    version = "0.1"
+    strings:
+        $c1 = "CreateMutex"
+    condition:
+        1 of ($c*)
+}
 
+rule win_registry {
+    meta:
+        author = "x0r"
+        description = "Affect system registries"
+    version = "0.1"
+    strings:
+        $f1 = "advapi32.dll" nocase
+        $c1 = "RegQueryValueExA"
+        $c2 = "RegOpenKeyExA"
+        $c3 = "RegCloseKey"
+        $c4 = "RegSetValueExA"
+        $c5 = "RegCreateKeyA"
+        $c6 = "RegCloseKey"
+    condition:
+        $f1 and 1 of ($c*)
+}
 
 rule win_token {
     meta:
@@ -763,6 +789,29 @@ rule win_private_profile {
         $c3 = "WritePrivateProfileStringA"
     condition:
         $f1 and 1 of ($c*)
+}
+
+rule win_files_operation {
+    meta:
+        author = "x0r"
+        description = "Affect private profile"
+    version = "0.1"
+    strings:
+        $f1 = "kernel32.dll" nocase
+        $c1 = "WriteFile"
+        $c2 = "SetFilePointer"
+        $c3 = "WriteFile"
+        $c4 = "ReadFile"
+        $c5 = "DeleteFileA"
+        $c6 = "CreateFileA"
+        $c7 = "FindFirstFileA"
+        $c8 = "MoveFileExA"
+        $c9 = "FindClose"
+        $c10 = "SetFileAttributesA"
+        $c11 = "CopyFile"
+
+    condition:
+        $f1 and 3 of ($c*)
 }
 
 
@@ -817,6 +866,22 @@ rule Str_Win32_Internet_API
         (any of ($wininet_call*))
 }
 
+rule Str_Win32_Http_API
+{
+    meta:
+        author = "@adricnet"
+        description = "Match Windows Http API call"
+        method = "String match, trim the As"
+        reference = "https://github.com/dfirnotes/rules"
+
+    strings:
+        $wininet_call_httpr = "HttpSendRequest"
+        $wininet_call_httpq = "HttpQueryInfo"
+        $wininet_call_httpo = "HttpOpenRequest"
+
+     condition:
+        (any of ($wininet_call_http*))
+}
 
 
 rule ldpreload
