@@ -1,0 +1,43 @@
+{
+  "engine": "yara",
+  "engine_path": "D:\\virus-code-main\\virus-code-main\\backend\\yara64.exe",
+  "target": "C:\\Users\\ASUS\\Desktop\\badCode\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-01.dll",
+  "rules_dir": "D:\\virus-code-main\\virus-code-main\\rules\\yara",
+  "rules_count": 612,
+  "rules_bundles": [
+    {
+      "bundle": "course",
+      "rules_count": 35
+    },
+    {
+      "bundle": "Neo23x0",
+      "rules_count": 11
+    },
+    {
+      "bundle": "Yara-Rules",
+      "rules_count": 566
+    }
+  ],
+  "rules_bundles_skipped": [
+    {
+      "bundle": "Neo23x0",
+      "rules_count": 11,
+      "error": "error: rule \"Detect_Crowdstrike_UpdateIsuue_Campaign_FileHashes\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara_6t4bwq0z\\all_rules_merged.yar(326): syntax error, unexpected '}'"
+    },
+    {
+      "bundle": "Yara-Rules",
+      "rules_count": 566,
+      "error": "error: rule \"Android_AliPay_smsStealer\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4242): invalid field name \"certificate\"\nerror: rule \"coudw\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4267): invalid field name \"url\"\nerror: rule \"z3core\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4276): invalid field name \"url\"\nerror: rule \"gtalocker\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4285): invalid field name \"url\"\nerror: rule \"marcher\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4294): invalid field name \"url\"\nerror: rule \"lenovo_reaper\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4315): invalid field name \"url\"\nerror: rule \"unknown_1\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4324): invalid field name \"url\"\nerror: rule \"jagonca\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4336): invalid field name \"url\"\nerror: rule \"thoughtcrime\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4346): invalid field name \"url\"\nerror: rule \"slocker\" in C:\\Users\\ASUS\\AppData\\Local\\Temp\\avscan_yara__lq6opuc\\all_rules_merged.yar(4359): invalid field name \"url\""
+    }
+  ],
+  "threads": 4,
+  "hits_files": 1,
+  "hits_total": 3,
+  "detections": {
+    "C:\\Users\\ASUS\\Desktop\\badCode\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-01.dll": [
+      "lab11dll",
+      "Lab03_03",
+      "Lab07_03_dll"
+    ]
+  }
+}

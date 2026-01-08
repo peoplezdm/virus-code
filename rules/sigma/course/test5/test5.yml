@@ -1,0 +1,14 @@
+title: 修改注册表项
+author: 张德民
+date: '2025-11-12'
+
+logsource:
+  product: windows
+  service: sysmon
+  category: registry_set
+detection:
+  selection:
+   Image|contains: 'wscript.exe'
+   TargetObject|contains: 'Windows Defender'
+  condition: selection
+level: critical

@@ -1,0 +1,11 @@
+{
+  "engine": "yara",
+  "engine_path": "D:\\virus-code-main\\virus-code-main\\backend\\yara64.exe",
+  "target": "C:\\Users\\ASUS\\Desktop\\badCode\\Practical Malware Analysis Labs\\BinaryCollection\\Chapter_1L\\Lab01-01.dll",
+  "rules_dir": "D:\\virus-code-main\\virus-code-main\\rules\\yara",
+  "rules_count": 612,
+  "threads": 4,
+  "hits_files": 0,
+  "hits_total": 0,
+  "detections": {}
+}

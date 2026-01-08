@@ -1,0 +1,15 @@
+title: 检测 cacls 授予 C:\Windows\System32 完全控制权限
+author: 张德民
+date: '2025-11-13'
+description: 监测cacls 递归授予当前用户 C:\Windows\System32 目录完全控制权限
+logsource:
+  product: windows
+  service: sysmon
+  category: process_creation
+detection:
+  selection_cacls:
+    Image|contains: 'cacls.exe'
+    CommandLine|contains: 'cacls C:\Windows\system32\*.* /t /g %username%:F'
+    CommandLine|contains: 'echo Y|'
+  condition: selection_cacls
+level: critical
